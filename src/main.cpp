@@ -19,10 +19,10 @@ void printResults(const std::vector<std::vector<std::string>>& results) {
 
 int main() {
     try {
-        // Load configuration
+        // Загрузка конфигурации
         DatabaseConfig config = DatabaseConfig::loadFromFile("schema.json");
         
-        // Initialize database
+        // Инициализация базы данных
         Database db(config);
         db.initialize();
         
@@ -37,7 +37,7 @@ int main() {
                 continue;
             }
             
-            // Convert to uppercase for parsing
+            // Преобразование в верхний регистр для парсинга
             std::string upperQuery = query;
             std::transform(upperQuery.begin(), upperQuery.end(), upperQuery.begin(), ::toupper);
             

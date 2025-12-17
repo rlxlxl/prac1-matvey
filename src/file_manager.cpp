@@ -10,16 +10,16 @@ namespace fs = std::filesystem;
 
 void FileManager::initializeDatabase(const std::string& schemaName, 
                                      const std::map<std::string, std::vector<std::string>>& structure) {
-    // Create schema directory
+    // Создание директории схемы
     fs::create_directories(schemaName);
     
     for (const auto& [tableName, columns] : structure) {
         std::string tablePath = schemaName + "/" + tableName;
         fs::create_directories(tablePath);
         
-        // Create first CSV file with header (only if it doesn't exist)
+        // Создание первого CSV файла с заголовком (только если не существует)
         std::vector<std::string> header = columns;
-        header.insert(header.begin(), tableName + "_pk"); // Add PK column at the beginning
+        header.insert(header.begin(), tableName + "_pk"); // Добавление колонки первичного ключа в начало
         
         std::string csvFile = tablePath + "/1.csv";
         if (!fs::exists(csvFile)) {
@@ -34,7 +34,7 @@ void FileManager::initializeDatabase(const std::string& schemaName,
             }
         }
         
-        // Initialize PK sequence file (only if it doesn't exist)
+        // Инициализация файла последовательности первичных ключей (только если не существует)
         std::string pkFile = tablePath + "/" + tableName + "_pk_sequence";
         if (!fs::exists(pkFile)) {
             std::ofstream pkStream(pkFile);
@@ -61,13 +61,13 @@ std::vector<std::string> FileManager::getCSVFiles(const std::string& tablePath) 
         if (entry.is_regular_file()) {
             std::string filename = entry.path().filename().string();
             if (filename.find(".csv") != std::string::npos && 
-                filename.find("_") == std::string::npos) { // Exclude lock and sequence files
+                filename.find("_") == std::string::npos) { // Исключение файлов блокировки и последовательности
                 files.push_back(entry.path().string());
             }
         }
     }
     
-    // Sort files by number
+    // Сортировка файлов по номеру
     std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
         std::string numA = fs::path(a).stem().string();
         std::string numB = fs::path(b).stem().string();
@@ -100,7 +100,7 @@ std::vector<std::vector<std::string>> FileManager::readCSVFile(const std::string
     while (std::getline(file, line)) {
         if (isFirstLine) {
             isFirstLine = false;
-            continue; // Skip header
+            continue; // Пропуск заголовка
         }
         
         if (line.empty()) continue;
@@ -131,14 +131,14 @@ void FileManager::writeCSVFile(const std::string& filepath,
         throw std::runtime_error("Cannot write to file: " + filepath);
     }
     
-    // Write header
+    // Запись заголовка
     for (size_t i = 0; i < header.size(); ++i) {
         file << header[i];
         if (i < header.size() - 1) file << ",";
     }
     file << "\n";
     
-    // Write rows
+    // Запись строк
     for (const auto& row : rows) {
         for (size_t i = 0; i < row.size(); ++i) {
             file << row[i];
@@ -193,7 +193,7 @@ bool FileManager::lockTable(const std::string& tablePath, const std::string& tab
     std::string lockFile = tablePath + "/" + tableName + "_lock";
     
     if (fs::exists(lockFile)) {
-        return false; // Table is already locked
+        return false; // Таблица уже заблокирована
     }
     
     std::ofstream file(lockFile);

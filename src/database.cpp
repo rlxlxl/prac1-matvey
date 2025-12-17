@@ -45,7 +45,7 @@ bool Database::evaluateCondition(const Condition& cond,
     std::string leftValue;
     std::string rightValue;
     
-    // Get left value
+    // Получение левого значения
     if (rowData.find(cond.leftTable) != rowData.end() && 
         tableHeaders.find(cond.leftTable) != tableHeaders.end()) {
         const auto& row = rowData.at(cond.leftTable);
@@ -60,7 +60,7 @@ bool Database::evaluateCondition(const Condition& cond,
         }
     }
     
-    // Get right value
+    // Получение правого значения
     if (cond.isLiteral) {
         rightValue = cond.rightValue;
     } else {
@@ -111,7 +111,7 @@ std::vector<std::vector<std::string>> Database::executeSelect(const SelectQuery&
         return result;
     }
     
-    // Get headers for all tables
+    // Получение заголовков для всех таблиц
     std::map<std::string, std::vector<std::string>> tableHeaders;
     std::map<std::string, std::string> tablePaths;
     
@@ -121,14 +121,14 @@ std::vector<std::vector<std::string>> Database::executeSelect(const SelectQuery&
         tableHeaders[tableName] = getTableHeader(tablePath, tableName);
     }
     
-    // Recursive function to generate cartesian product
+    // Рекурсивная функция для генерации декартова произведения
     std::function<void(size_t, std::map<std::string, std::vector<std::string>>)> 
         generateProduct = [&](size_t tableIndex, 
                               std::map<std::string, std::vector<std::string>> currentRows) {
         if (tableIndex >= query.tables.size()) {
-            // Check conditions
+            // Проверка условий
             if (evaluateConditions(query.conditions, currentRows, tableHeaders)) {
-                // Build result row
+                // Построение результирующей строки
                 std::vector<std::string> resultRow;
                 for (const auto& col : query.columns) {
                     if (currentRows.find(col.tableName) != currentRows.end() &&
@@ -156,7 +156,7 @@ std::vector<std::vector<std::string>> Database::executeSelect(const SelectQuery&
             return;
         }
         
-        // Process current table
+        // Обработка текущей таблицы
         std::string tableName = query.tables[tableIndex];
         std::string tablePath = tablePaths[tableName];
         auto files = FileManager::getCSVFiles(tablePath);
@@ -179,48 +179,48 @@ std::vector<std::vector<std::string>> Database::executeSelect(const SelectQuery&
 void Database::executeInsert(const InsertQuery& query) {
     std::string tablePath = FileManager::getTablePath(schemaName, query.tableName);
     
-    // Lock table
+    // Блокировка таблицы
     if (!FileManager::lockTable(tablePath, query.tableName)) {
         throw std::runtime_error("Table " + query.tableName + " is locked");
     }
     
     try {
-        // Get next PK
+        // Получение следующего первичного ключа
         int nextPK = FileManager::readPKSequence(tablePath, query.tableName) + 1;
         
-        // Get table structure
+        // Получение структуры таблицы
         auto header = getTableHeader(tablePath, query.tableName);
         if (header.empty()) {
             FileManager::unlockTable(tablePath, query.tableName);
             throw std::runtime_error("Cannot read table structure");
         }
         
-        // Count data columns (excluding PK)
+        // Подсчет колонок данных (исключая первичный ключ)
         size_t dataColumnCount = header.size() - 1;
         if (query.values.size() != dataColumnCount) {
             FileManager::unlockTable(tablePath, query.tableName);
             throw std::runtime_error("Column count mismatch");
         }
         
-        // Find file to insert into
+        // Поиск файла для вставки
         auto files = FileManager::getCSVFiles(tablePath);
         std::string targetFile;
         
         if (files.empty()) {
             targetFile = tablePath + "/1.csv";
         } else {
-            // Check last file
+            // Проверка последнего файла
             std::string lastFile = files.back();
             int rowCount = FileManager::getRowCount(lastFile);
             
             if (rowCount < config.tuples_limit) {
                 targetFile = lastFile;
             } else {
-                // Create new file
+                // Создание нового файла
                 int nextFileNum = FileManager::getNextFileNumber(tablePath);
                 targetFile = tablePath + "/" + std::to_string(nextFileNum) + ".csv";
                 
-                // Create file with header
+                // Создание файла с заголовком
                 std::ofstream newFile(targetFile);
                 if (newFile.is_open()) {
                     for (size_t i = 0; i < header.size(); ++i) {
@@ -233,15 +233,15 @@ void Database::executeInsert(const InsertQuery& query) {
             }
         }
         
-        // Build row: PK + values
+        // Построение строки: первичный ключ + значения
         std::vector<std::string> row;
         row.push_back(std::to_string(nextPK));
         row.insert(row.end(), query.values.begin(), query.values.end());
         
-        // Append row
+        // Добавление строки
         FileManager::appendToCSVFile(targetFile, row);
         
-        // Update PK sequence
+        // Обновление последовательности первичных ключей
         FileManager::writePKSequence(tablePath, query.tableName, nextPK);
         
     } catch (...) {
@@ -249,14 +249,14 @@ void Database::executeInsert(const InsertQuery& query) {
         throw;
     }
     
-    // Unlock table
+    // Разблокировка таблицы
     FileManager::unlockTable(tablePath, query.tableName);
 }
 
 void Database::executeDelete(const DeleteQuery& query) {
     std::string tablePath = FileManager::getTablePath(schemaName, query.tableName);
     
-    // Lock table
+    // Блокировка таблицы
     if (!FileManager::lockTable(tablePath, query.tableName)) {
         throw std::runtime_error("Table " + query.tableName + " is locked");
     }
@@ -286,7 +286,7 @@ void Database::executeDelete(const DeleteQuery& query) {
                 }
             }
             
-            // Rewrite file
+            // Перезапись файла
             FileManager::writeCSVFile(file, header, newRows);
         }
         
@@ -295,7 +295,7 @@ void Database::executeDelete(const DeleteQuery& query) {
         throw;
     }
     
-    // Unlock table
+    // Разблокировка таблицы
     FileManager::unlockTable(tablePath, query.tableName);
 }
 

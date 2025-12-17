@@ -23,10 +23,10 @@ struct Condition {
     std::string operator_;
     std::string rightTable;
     std::string rightColumn;
-    std::string rightValue; // For literal values
+    std::string rightValue; // Для литеральных значений
     bool isLiteral;
     
-    std::string logicalOp; // "AND" or "OR"
+    std::string logicalOp; // "AND" или "OR"
 };
 
 struct SelectQuery {

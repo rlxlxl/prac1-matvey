@@ -76,7 +76,7 @@ Condition SQLParser::parseCondition(const std::vector<std::string>& tokens, size
     Condition cond;
     cond.logicalOp = "";
     
-    // Left side: table.column
+    // Левая сторона: таблица.колонка
     if (pos < tokens.size()) {
         std::string left = tokens[pos++];
         size_t dotPos = left.find('.');
@@ -86,22 +86,22 @@ Condition SQLParser::parseCondition(const std::vector<std::string>& tokens, size
         }
     }
     
-    // Operator (=)
+    // Оператор (=)
     if (pos < tokens.size() && tokens[pos] == "=") {
         cond.operator_ = tokens[pos++];
     }
     
-    // Right side
+    // Правая сторона
     if (pos < tokens.size()) {
         std::string right = tokens[pos];
         
         if (right[0] == '\'') {
-            // Literal value
+            // Литеральное значение
             cond.isLiteral = true;
             cond.rightValue = removeQuotes(right);
             pos++;
         } else {
-            // Column reference
+            // Ссылка на колонку
             cond.isLiteral = false;
             size_t dotPos = right.find('.');
             if (dotPos != std::string::npos) {
@@ -112,7 +112,7 @@ Condition SQLParser::parseCondition(const std::vector<std::string>& tokens, size
         }
     }
     
-    // Check for AND/OR
+    // Проверка на AND/OR
     if (pos < tokens.size()) {
         std::string upper = toUpper(tokens[pos]);
         if (upper == "AND" || upper == "OR") {
@@ -128,9 +128,9 @@ SelectQuery SQLParser::parseSelect(const std::string& query) {
     SelectQuery selectQuery;
     auto tokens = tokenize(query);
     
-    size_t pos = 1; // Skip SELECT
+    size_t pos = 1; // Пропуск SELECT
     
-    // Parse columns
+    // Парсинг колонок
     while (pos < tokens.size() && toUpper(tokens[pos]) != "FROM") {
         if (tokens[pos] != "," && tokens[pos] != " ") {
             std::string col = tokens[pos];
@@ -145,12 +145,12 @@ SelectQuery SQLParser::parseSelect(const std::string& query) {
         pos++;
     }
     
-    // Skip FROM
+    // Пропуск FROM
     if (pos < tokens.size() && toUpper(tokens[pos]) == "FROM") {
         pos++;
     }
     
-    // Parse tables
+    // Парсинг таблиц
     while (pos < tokens.size() && toUpper(tokens[pos]) != "WHERE") {
         if (tokens[pos] != "," && tokens[pos] != " ") {
             selectQuery.tables.push_back(tokens[pos]);
@@ -158,7 +158,7 @@ SelectQuery SQLParser::parseSelect(const std::string& query) {
         pos++;
     }
     
-    // Parse WHERE conditions
+    // Парсинг условий WHERE
     if (pos < tokens.size() && toUpper(tokens[pos]) == "WHERE") {
         pos++;
         while (pos < tokens.size()) {
@@ -178,29 +178,29 @@ InsertQuery SQLParser::parseInsert(const std::string& query) {
     InsertQuery insertQuery;
     auto tokens = tokenize(query);
     
-    size_t pos = 1; // Skip INSERT
+    size_t pos = 1; // Пропуск INSERT
     
-    // Skip INTO
+    // Пропуск INTO
     if (pos < tokens.size() && toUpper(tokens[pos]) == "INTO") {
         pos++;
     }
     
-    // Get table name
+    // Получение имени таблицы
     if (pos < tokens.size()) {
         insertQuery.tableName = tokens[pos++];
     }
     
-    // Skip VALUES
+    // Пропуск VALUES
     if (pos < tokens.size() && toUpper(tokens[pos]) == "VALUES") {
         pos++;
     }
     
-    // Skip (
+    // Пропуск (
     if (pos < tokens.size() && tokens[pos] == "(") {
         pos++;
     }
     
-    // Parse values
+    // Парсинг значений
     while (pos < tokens.size() && tokens[pos] != ")") {
         if (tokens[pos] != "," && tokens[pos] != " ") {
             insertQuery.values.push_back(removeQuotes(tokens[pos]));
@@ -215,19 +215,19 @@ DeleteQuery SQLParser::parseDelete(const std::string& query) {
     DeleteQuery deleteQuery;
     auto tokens = tokenize(query);
     
-    size_t pos = 1; // Skip DELETE
+    size_t pos = 1; // Пропуск DELETE
     
-    // Skip FROM
+    // Пропуск FROM
     if (pos < tokens.size() && toUpper(tokens[pos]) == "FROM") {
         pos++;
     }
     
-    // Get table name
+    // Получение имени таблицы
     if (pos < tokens.size()) {
         deleteQuery.tableName = tokens[pos++];
     }
     
-    // Parse WHERE conditions
+    // Парсинг условий WHERE
     if (pos < tokens.size() && toUpper(tokens[pos]) == "WHERE") {
         pos++;
         while (pos < tokens.size()) {

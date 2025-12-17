@@ -19,12 +19,12 @@ DatabaseConfig DatabaseConfig::loadFromFile(const std::string& filename) {
     }
     file.close();
     
-    // Simple JSON parser for our specific format
-    // Remove whitespace
+    // Простой парсер JSON для нашего формата
+    // Удаление пробелов
     content.erase(std::remove_if(content.begin(), content.end(), 
         [](char c) { return std::isspace(c); }), content.end());
     
-    // Extract name
+    // Извлечение имени схемы
     size_t namePos = content.find("\"name\":\"");
     if (namePos != std::string::npos) {
         namePos += 8;
@@ -32,7 +32,7 @@ DatabaseConfig DatabaseConfig::loadFromFile(const std::string& filename) {
         config.name = content.substr(namePos, nameEnd - namePos);
     }
     
-    // Extract tuples_limit
+    // Извлечение tuples_limit
     size_t limitPos = content.find("\"tuples_limit\":");
     if (limitPos != std::string::npos) {
         limitPos += 15;
@@ -40,7 +40,7 @@ DatabaseConfig DatabaseConfig::loadFromFile(const std::string& filename) {
         config.tuples_limit = std::stoi(content.substr(limitPos, limitEnd - limitPos));
     }
     
-    // Extract structure
+    // Извлечение структуры
     size_t structPos = content.find("\"structure\":{");
     if (structPos != std::string::npos) {
         structPos += 13;
@@ -50,14 +50,14 @@ DatabaseConfig DatabaseConfig::loadFromFile(const std::string& filename) {
         
         size_t pos = 0;
         while (pos < structContent.length()) {
-            // Find table name
+            // Поиск имени таблицы
             size_t tableStart = structContent.find("\"", pos);
             if (tableStart == std::string::npos) break;
             tableStart += 1;
             size_t tableEnd = structContent.find("\"", tableStart);
             std::string tableName = structContent.substr(tableStart, tableEnd - tableStart);
             
-            // Find columns array
+            // Поиск массива колонок
             size_t arrayStart = structContent.find("[", tableEnd);
             if (arrayStart == std::string::npos) break;
             size_t arrayEnd = structContent.find("]", arrayStart);
